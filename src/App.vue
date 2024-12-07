@@ -203,7 +203,7 @@
 <template>
 
   <div class="contenedor">
-    <h1>Tic Tac Toe</h1>
+    <h1 style="text-align: center;">Tic Tac Toe</h1>
 
     <h3
       v-show="resultado"
@@ -304,6 +304,14 @@
     box-shadow: 0 4px 16px rgba(95, 158, 160, 0.4);
     border: 2px solid #FFD700;
     color: #FFD700;
+  }
+
+  @media (max-width: 600px){
+    .custom-button{
+      width: 100%;
+      font-size: 20px;
+      padding: 15px;
+    }
   }
 
 </style>
