@@ -2,18 +2,33 @@
 import {computed} from 'vue';
 
 const props = defineProps({
-    figura: String
+    figura: String,
+    esGanadora: Boolean,
+    oculta: Boolean,
+    mostrar: Boolean
 })
 
 const figuraClass = computed(()=>{
     return props.figura === '🔵' ? 'circulo' : props.figura === '❌' ? 'cruz' : '';
 })
 
+const ganadoraClass = computed(() =>{
+    return props.esGanadora ? 'casilla-ganadora' : '';
+})
+
+const ocultaClass = computed(() => {
+    return props.oculta ? 'figura-oculta' : '';
+})
+
+const mostrarClass = computed(() => {
+    return props.mostrar ? 'figura-mostrar' : '';
+})
+
 </script>
 
 
 <template>
-    <button :class="figuraClass">
+    <button :class="[figuraClass, ganadoraClass, ocultaClass, mostrarClass]">
         <span>{{ figura }}</span>
     </button>
 </template>
@@ -62,5 +77,58 @@ const figuraClass = computed(()=>{
     .cruz span{
         animation: drawCross 0.5s ease-out forwards;
     }
+
+    .casilla-ganadora{
+        background-color: aquamarine;
+        animation: ganarAnimacion 1s infinite;
+        box-shadow: 0 0 20px #00d2ff;
+    }
+
+    @keyframes ganarAnimacion{
+        0% {
+            background-color: #00d2ff;
+            box-shadow: 0 0 20px #00d2ff;
+        }
+        50% {
+            background-color: #7a00ff;
+            box-shadow: 0 0 20px #00d2ff;
+        }
+        100% {
+            background-color: #00d2ff;
+            box-shadow: 0 0 20px #00d2ff;
+        }
+    }
+
+    .figura-oculta{
+        animation: fadeOut 0.5s ease-out forwards;
+    }
+
+    .figura-mostrar{
+        animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    /*Animaciones de salida*/
+    @keyframes fadeOut {
+        from{
+            opacity: 1;
+            transform: scale(1);
+        }
+        to{
+            opacity: 0;
+            transform: scale(0);
+        }
+    }
+    @keyframes fadeIn {
+        from{
+            opacity: 0;
+            transform: scale(0);
+        }
+        to{
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    
 
 </style>

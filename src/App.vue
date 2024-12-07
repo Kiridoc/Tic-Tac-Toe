@@ -8,75 +8,129 @@
     o= '🔵'
   }
 
+  type CasillaTipo = {
+    figura: string,
+    esGanadora: boolean,
+    oculta: boolean
+    mostrar: boolean
+  }
+
   const resultado = ref<string | null>(null) //Lo de las llaves es para definir que puede ser string o nulo, es algo de type script
 
   const turno = ref(FIGURA.x)
 
   const tablero = ref([
-    ['','',''],
-    ['','',''],
-    ['','','']
+    [ {figura: '', esGanadora: false ,oculta: false, mostrar: false} , {figura: '', esGanadora: false ,oculta: false, mostrar: false} , {figura: '', esGanadora: false ,oculta: false, mostrar: false} ],
+    [ {figura: '', esGanadora: false ,oculta: false, mostrar: false} , {figura: '', esGanadora: false ,oculta: false, mostrar: false} , {figura: '', esGanadora: false ,oculta: false, mostrar: false} ],
+    [ {figura: '', esGanadora: false ,oculta: false, mostrar: false} , {figura: '', esGanadora: false ,oculta: false, mostrar: false} , {figura: '', esGanadora: false ,oculta: false, mostrar: false} ]
   ]);
 
   const reiniciar = () =>{
-    tablero.value = [
-    ['','',''],
-    ['','',''],
-    ['','','']  
-    ]
-    resultado.value = null
-  }
-
-  const verificarVertical = (columna: number, figura:string)=>{
-    for(let i = 0; i < tablero.value.length; i++){
-      if(tablero.value[i][columna] !== figura){
-        return false
+    for (let fila of tablero.value){
+      for (let casilla of fila) {
+        casilla.oculta = true;
       }
     }
-    return true
+    setTimeout(() =>{
+      tablero.value = [
+        [ {figura: '', esGanadora: false ,oculta: false, mostrar: true} , {figura: '', esGanadora: false ,oculta: false, mostrar: true} , {figura: '', esGanadora: false ,oculta: false, mostrar: true} ],
+        [ {figura: '', esGanadora: false ,oculta: false, mostrar: true} , {figura: '', esGanadora: false ,oculta: false, mostrar: true} , {figura: '', esGanadora: false ,oculta: false, mostrar: true} ],
+        [ {figura: '', esGanadora: false ,oculta: false, mostrar: true} , {figura: '', esGanadora: false ,oculta: false, mostrar: true} , {figura: '', esGanadora: false ,oculta: false, mostrar: true} ]
+      ]
+    }, 500)    
+    for (let fila of tablero.value){
+      for (let casilla of fila) {
+        casilla.mostrar = false;
+      }
+    }  
+
+    resultado.value = null;
+
+    
+  }
+
+  const marcarCasillasGanadoras = (posiciones: number[][]) => {
+    for( let [fila, columna] of posiciones) {
+      tablero.value[fila][columna].esGanadora = true;
+    }
+  }
+
+
+  const verificarVertical = (columna: number, figura:string)=>{
+    let esGanador = true
+    const posiciones: number[][] = []
+    for(let i = 0; i < tablero.value.length; i++){
+      if(tablero.value[i][columna].figura !== figura){
+        esGanador = false
+        break
+      }else{
+        posiciones.push([i, columna])
+      }
+    }
+    if (esGanador) {
+      marcarCasillasGanadoras(posiciones);
+    }
+    return esGanador
   }
 
   const verificarHorizontal = (fila: number, figura:string)=>{
+    let esGanador = true
+    const posiciones: number[][] = []
     for(let i = 0; i < tablero.value.length; i++){
-      if(tablero.value[fila][i] !== figura){
-        return false
+      if(tablero.value[fila][i].figura !== figura){
+        esGanador = false
+        break
+      }else{
+        posiciones.push([fila, i])
       }
     }
-    return true
+    if (esGanador){
+      marcarCasillasGanadoras(posiciones)
+    }
+    return esGanador
   }
 
   const verificarDiagonal1 = (figura:string)=>{
-    let j = 0
+    let esGanador = true
+    const posiciones: number[][] = []
     for(let i = 0; i < tablero.value.length; i++){
-      if(tablero.value[i][j] !== figura){
-        return false
+      if(tablero.value[i][i].figura !== figura){
+        esGanador = false
+        break
+      }else{
+        posiciones.push([i, i])
       }
-      j++
     }
-    return true
+    if (esGanador){
+      marcarCasillasGanadoras(posiciones)
+    }
+    return esGanador
   }
   const verificarDiagonal2 = (figura:string)=>{
-    let j = 2
+    let esGanador = true
+    const posiciones: number[][] = []
     for(let i = 0; i < tablero.value.length; i++){
-      if(tablero.value[i][j] !== figura){
-        return false
+      if(tablero.value[i][tablero.value.length - i - 1].figura !== figura){
+        esGanador = false
+        break
+      }else{
+        posiciones.push([i, tablero.value.length - i - 1])
       }
-      j--
     }
-    return true
+    if (esGanador){
+      marcarCasillasGanadoras(posiciones)
+    }
+    return esGanador
   }
   const verificarDiagonal = (figura:string)=>{
-    if(verificarDiagonal1(figura) || verificarDiagonal2(figura)){
-      return true
-    }
-    else{ return false }
+    return verificarDiagonal1(figura) || verificarDiagonal2(figura)
   }
 
   /*Si encuentro un espacio ocupado, no está vacío*/
   const tableroVacio = computed(()=>{
     for(let fila of tablero.value){
-      for(let columna of fila){
-        if(columna !== ''){
+      for(let casilla of fila){
+        if(casilla.figura !== ''){
           return false
         }
       }
@@ -87,8 +141,8 @@
   /*Si encuentro un espacio vacío, no está lleno*/
   const tableroLleno = computed(()=>{
     for(let fila of tablero.value){
-      for(let columna of fila){
-        if(columna === ''){
+      for(let casilla of fila){
+        if(casilla.figura === ''){
           return false
         }
       }
@@ -110,17 +164,18 @@
   }
 
   const cambiarEstadoCasilla = (fila:number, columna:number)=>{ 
-    if(!tablero.value[fila][columna] && resultado.value == null){
-      tablero.value[fila][columna] = turno.value
+    if(!tablero.value[fila][columna].figura && resultado.value == null){
+      tablero.value[fila][columna].figura = turno.value
       playSound(turno.value); //Reproduce el sonido
       turno.value = FIGURA.x === turno.value ? FIGURA.o : FIGURA.x
 
       //Verificar si ganó
-      if(verificarVertical(columna, tablero.value[fila][columna]) ||
-      verificarHorizontal(fila, tablero.value[fila][columna]) ||
-      verificarDiagonal(tablero.value[fila][columna])
+      const figuraActual = tablero.value[fila][columna].figura;
+      if(verificarVertical(columna, figuraActual) ||
+      verificarHorizontal(fila, figuraActual) ||
+      verificarDiagonal(figuraActual)
       ){
-        resultado.value = `GANÓ ${tablero.value[fila][columna]}`
+        resultado.value = `GANÓ ${figuraActual}`
         let audio = new Audio('/sounds/win.mp3')
         audio.play()
       }
@@ -129,12 +184,6 @@
         let audio = new Audio('/sounds/empate.mp3')
         audio.play()
       }
-  
-
-      if(tableroLleno.value){
-       console.log('TABLERO LLENO')
-      }
-
     }
   }
 
@@ -160,10 +209,14 @@
       v-show="resultado"
       style="color: #fff;">Resultado: {{ resultado }}</h3>
     
-    <div class="fila" v-for="(fila,indexF) in tablero">
+    <div class="fila" v-for="(fila,indexF) in tablero" :key="indexF">
       <Casilla
-       v-for="(columna,indexC) in fila"
-       :figura="columna"
+       v-for="(casilla,indexC) in fila"
+       :key="indexC"
+       :figura="casilla.figura"
+       :esGanadora="casilla.esGanadora"
+       :oculta="casilla.oculta"
+       :mostrar="casilla.mostrar"
        @click="cambiarEstadoCasilla(indexF,indexC)"
        />
 
@@ -226,17 +279,31 @@
   .custom-button{
     width: auto;
     font-size: 25px;
-    background-color: transparent;
-    border-color: #52438F;
+    background-color: #7a00ff;
+    border: none;
+    border-radius: 10px;
     margin: 5px;
     color: #fff;
-    padding: 10px;
+    padding: 10px 20px;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(95, 158, 160, 0.2);
+  }
+
+  .custom-button:hover{
+    background-color: #48D1CC;
+    box-shadow: 0 4px 16px rgba(95, 158, 160, 0.4);
+  }
+
+  .custom-button:active{
+    transform: scale(0.95);
   }
 
   .btn-activo{
-    background-color: #42B883;
-    transform: scale(0.95);
+    background-color: #48D1CC;
+    box-shadow: 0 4px 16px rgba(95, 158, 160, 0.4);
+    border: 2px solid #FFD700;
+    color: #FFD700;
   }
+
 </style>
